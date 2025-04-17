@@ -159,6 +159,7 @@ public class MenuManager : MonoBehaviour
 
     public void RestartGame()
     {
+        networkClient.Disconnect();
         SceneManager.LoadScene(Constants.DemoSceneName);
     }
     #endregion
