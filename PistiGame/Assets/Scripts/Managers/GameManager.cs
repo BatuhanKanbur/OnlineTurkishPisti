@@ -2,82 +2,33 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Enums;
 using Objects;
+using Payloads;
 using Structures;
 using UnityEngine;
+using UnityEngine.AddressableAssets;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using Player = Objects.Player;
 using Random = UnityEngine.Random;
 
 namespace Managers
 {
     public class GameManager : Singleton<GameManager>
     {
-        private GameState _currentGameState = GameState.Menu;
-        private GameState CurrentGameState
-        {
-            get => _currentGameState;
-            set
-            {
-                if (_currentGameState != value)
-                {
-                    menuScene.SetActive(value==GameState.Menu);
-                    gameScene.SetActive(value==GameState.Game);
-                    finishScene.SetActive(value==GameState.Finish);
-                }
-                _currentGameState = value;
-            }
-        }
-
+        [SerializeField] private AssetReference cardPrefab;
         #region Menu
-        [SerializeField] private InputField playerNameInput;
-        [SerializeField] private Text playerCountText;
         [SerializeField] private Player mainPlayer;
-        [SerializeField] private GameObject menuScene,gameScene,finishScene;
-        [SerializeField] private GameObject[] playersInfo;
-        private int _playerCount = 2;
-
-        public void StartGameButton()
-        {
-            if (playerNameInput.text == String.Empty)
-                playerNameInput.text = Constants.AINames[Random.Range(0, Constants.AINames.Length)];
-            mainPlayer.Init(playerNameInput.text);
-            StartGame();
-        }
-
-        public void RestartGame()
-        {
-            SceneManager.LoadScene(Constants.DemoSceneName);
-        }
-
+        public Action<List<Tuple<IPlayer,int,int>>> OnGameFinish;
         private void FinishGame()
         {
-            List<Tuple<IPlayer,int, int>> playerScores = new List<Tuple<IPlayer,int, int>>();
+            var playerScores = new List<Tuple<IPlayer,int, int>>();
             foreach (var player in _playerDictionary)
                 playerScores.Add(new Tuple<IPlayer, int, int>(player.Key.GetScore().Item1,player.Key.GetScore().Item2,player.Key.GetScore().Item3));
             playerScores.Sort((a, b) => b.Item3.CompareTo(a.Item3));
             playerScores[0] = new Tuple<IPlayer, int, int>(playerScores[0].Item1, playerScores[0].Item2 + 3,playerScores[0].Item3);
-            for (int i = 0; i < playerScores.Count; i++)
-            {
-                playersInfo[i].SetActive(true);
-                playersInfo[i].transform.GetChild(1).GetComponent<Text>().text = playerScores[i].Item1.GetPlayerName();
-                playersInfo[i].transform.GetChild(2).GetComponent<Text>().text = playerScores[i].Item2.ToString();
-            }
-
-            CurrentGameState = GameState.Finish;
-        }
-        public void PlayerCountChange(int val)
-        {
-            _playerCount += val;
-            if (_playerCount < 2)
-                _playerCount = 4;
-            if (_playerCount > 4)
-                _playerCount = 2;
-            for (int i = 0; i < players.Length; i++)
-            {
-                players[i].gameObject.SetActive(i<_playerCount);
-            }
-            playerCountText.text = _playerCount.ToString();
+            OnGameFinish?.Invoke(playerScores);
         }
         #endregion
         #region GamePlayFields
@@ -103,41 +54,28 @@ namespace Managers
         #endregion
 
         private GameAssetManager _gameAssetManager;
-        private PoolManager _poolManager;
-
-
-        private void Start()
-        {
-            _gameAssetManager = GameAssetManager.Instance;
-            _poolManager = PoolManager.Instance;
-            InitGame();
-        }
-
-        private async void InitGame()
-        {
-            await _gameAssetManager.LoadAssets();
-            await _poolManager.CreatePool(_gameAssetManager.GetCardPrefab(), PoolType.Card, 20);
-        }
-
-        public void StartGame()
+        public async void StartGame(Room roomPayload,string playerName)
         {            
-            CurrentGameState = GameState.Game;
+            mainPlayer.Init(playerName);
+            _gameAssetManager = GameAssetManager.Instance;
+            await _gameAssetManager.LoadAssets();
             _deckArray.CreateDeck();
-            for (var i = 0; i < _playerCount; i++)
+            for (var i = 0; i < roomPayload.MaxPlayers; i++)
             {
                 players[i].gameObject.SetActive(true);
                 players[i].OnPlayCard += Play;
                 players[i].OnHasNoCardsLeft += NoCardsLeft;
                 _playerDictionary.Add(players[i],i);
             }
-
             var newStackArray = _deckArray.DistributeDeck();
             for (var i = 0; i < newStackArray.Length; i++)
             {
+                Debug.Log(newStackArray[i]);
                 var cardSprite = i < newStackArray.Length - 1 ? _gameAssetManager.GetCardBackFace() : _gameAssetManager.GetCard(newStackArray[i]);
-                var newCard = _poolManager.GetObjectFromPool(PoolType.Card).GetComponent<Card>();
+                var newCardObject = await ObjectManager.GetObject(cardPrefab);
+                newCardObject.transform.SetParent(tableStack);
+                var newCard = newCardObject.GetComponent<Card>();
                 newCard.SetCard(cardSprite,_stackArray.Count,newStackArray[i]);
-                newCard.transform.SetParent(tableDeck);
                 _stackArray.Add(newStackArray[i],newCard);
             }
 
@@ -168,8 +106,9 @@ namespace Managers
             foreach (var cardId in newDeck)
             {
                 Sprite cardSprite = targetPlayer.playerType != PlayerType.MainPlayer ? _gameAssetManager.GetCardBackFace() : _gameAssetManager.GetCard(cardId);
-                Card newCard = _poolManager.GetObjectFromPool(PoolType.Card).GetComponent<Card>();
-                newCard.transform.SetParent(gameScene.transform);
+                var newCardObject =await ObjectManager.GetObject(cardPrefab);
+                Card newCard = newCardObject.GetComponent<Card>();
+                newCard.transform.SetParent(tableStack.transform);
                 newCard.transform.SetPositionAndRotation(tableStack.position, tableStack.rotation);
                 newCard.transform.Move(targetPlayer.transform,0.25f);
                 newCard.SetCard(cardSprite,0,cardId);
@@ -179,11 +118,12 @@ namespace Managers
             targetPlayer.SetDecks(newDeck,newCardList.ToArray());
             deckCountText.text = _deckArray.Count.ToString();
         }
-        private void Play(IPlayer player, int cardId)
+        private async void Play(IPlayer player, int cardId)
         {
             if (PlayerTurn == _playerDictionary[player])
             {
-                Card newCard = _poolManager.GetObjectFromPool(PoolType.Card).GetComponent<Card>();
+                var newCardObject = await ObjectManager.GetObject(cardPrefab);
+                Card newCard = newCardObject.GetComponent<Card>();
                 newCard.SetCard(_gameAssetManager.GetCard(cardId),_stackArray.Count,cardId);
                 newCard.transform.SetParent(tableDeck);
                 newCard.transform.SetPositionAndRotation(player.deckParent.transform.position,player.deckParent.transform.rotation);
@@ -282,19 +222,6 @@ namespace Managers
             return false;
         }
         private void NoCardsLeft(IPlayer player) =>  DistributeDeckToPlayer(player);
-        private enum TakeType
-        {
-            Normal,
-            Club2,
-            Diamond10,
-            AsJoker,
-            Joker
-        }
-        private enum GameState
-        {
-            Menu,
-            Game,
-            Finish
-        }
+        
     }
 }

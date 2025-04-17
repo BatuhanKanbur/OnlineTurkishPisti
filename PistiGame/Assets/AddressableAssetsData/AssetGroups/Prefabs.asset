@@ -17,13 +17,28 @@ MonoBehaviour:
     m_SerializedData: []
   m_GUID: f1961f29226d4404c90574bdb4995ab6
   m_SerializeEntries:
+  - m_GUID: 0ca9bc6ebecd7e748b0c1d4d244dfc37
+    m_Address: PlayerInfo
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 2b16fae77d995be49a917fc3c0e95343
     m_Address: Card
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 8071c1a0e0172e949a3b121c3217d541
-    m_Address: Card_Prefab
+  - m_GUID: 3bef15b17f7ecf7499d31a2396dabd5e
+    m_Address: Player
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 9d4d86152d6ccef4d9846cdef9b76cfe
+    m_Address: RoomInfo
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: ce26adb9b9fc06d46831378579f502a2
+    m_Address: HighScoreInfo
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0

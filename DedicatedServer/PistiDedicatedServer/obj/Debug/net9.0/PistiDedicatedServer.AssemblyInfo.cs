@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("PistiDedicatedServer")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+df88e6132d502c68086dfc2126f2acdd3a95d0d7")]
 [assembly: System.Reflection.AssemblyProductAttribute("PistiDedicatedServer")]
 [assembly: System.Reflection.AssemblyTitleAttribute("PistiDedicatedServer")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
