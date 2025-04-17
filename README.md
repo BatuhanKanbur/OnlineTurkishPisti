@@ -1,15 +1,15 @@
-# Online Pişti Game (LiteNetLib + Unity)
+# Online Pisthi Game (LiteNetLib + Unity)
 
-An online multiplayer Pişti (card game) built using Unity and a dedicated .NET Console Server powered by [LiteNetLib](https://github.com/RevenantX/LiteNetLib).
+An online multiplayer Pisthi (card game) built using Unity and a dedicated .NET Console Server powered by [LiteNetLib](https://github.com/RevenantX/LiteNetLib).
 
 ## 🎮 About the Game
 
-This is a classic Pişti card game with online multiplayer capabilities. Players can:
+This is a classic Pisthi card game with online multiplayer capabilities. Players can:
 
 - Connect to the dedicated server using their nickname
 - Create or join game rooms
 - See all active players and available rooms in the game scene
-- Play by clicking on cards, following traditional Pişti rules
+- Play by clicking on cards, following traditional Pisthi rules
 - Compete for the highest score, which is displayed at the end of the game
 - Return to the main lobby after each match
 
@@ -20,7 +20,7 @@ This is a classic Pişti card game with online multiplayer capabilities. Players
 - **No Backend Auth Yet:** Players connect by entering a nickname; no authentication code or backend integration currently
 - **Real-Time Room and Player List:** All players and rooms are listed live in the game scene
 - **Room Settings:** Configurable room sizes; full rooms are locked for new entries
-- **Card Game Mechanics:** Classic Pişti gameplay with simple point-and-click interaction
+- **Card Game Mechanics:** Classic Pisthi gameplay with simple point-and-click interaction
 
 ## 🧠 Architecture
 
